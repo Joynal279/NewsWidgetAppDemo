@@ -47,15 +47,32 @@ struct NewsListEntry: TimelineEntry {
 }
 
 struct NewsWidgetEntryView : View {
-    var entry: Provider.Entry
+    var entry: NewsListEntry
 
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
-
-            Text("Favorite Emoji:")
-            //Text(entry.configuration.favoriteEmoji)
+        GeometryReader { geometry in
+            switch entry.state {
+            case .idle:
+                Text("No data yet, waiting")
+                    .font(.system(size: 12))
+                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            case .error:
+                Text("Oops something went wrong - please reconfigure")
+                    .font(.system(size: 12))
+                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            case .success(let array):
+                VStack {
+                    Text("My News Widget")
+                    Spacer()
+                    ForEach(array) { array in
+                        Text(array.title)
+                            .frame(maxWidth: geometry.size.width, alignment: .leading)
+                            .font(.system(size: 12))
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer()
+                }
+            }
         }
     }
 }
