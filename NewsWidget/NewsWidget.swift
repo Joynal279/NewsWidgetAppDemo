@@ -9,22 +9,22 @@ import WidgetKit
 import SwiftUI
 
 struct Provider: AppIntentTimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
+    func placeholder(in context: Context) -> NewsListEntry {
+        NewsListEntry(date: Date(), state: .idle)
     }
 
-    func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: configuration)
+    func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> NewsListEntry {
+        NewsListEntry(date: Date(), state: .idle)
     }
     
-    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
-        var entries: [SimpleEntry] = []
+    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<NewsListEntry> {
+        var entries: [NewsListEntry] = []
 
         // Generate a timeline consisting of five entries an hour apart, starting from the current date.
         let currentDate = Date()
         for hourOffset in 0 ..< 5 {
             let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, configuration: configuration)
+            let entry = NewsListEntry(date: entryDate, state: .idle)
             entries.append(entry)
         }
 
@@ -32,9 +32,14 @@ struct Provider: AppIntentTimelineProvider {
     }
 }
 
-struct SimpleEntry: TimelineEntry {
+struct NewsListEntry: TimelineEntry {
+    enum State{
+        case idle
+        case error
+        case success([NewsArticle])
+    }
     let date: Date
-    let configuration: ConfigurationAppIntent
+    let state: State
 }
 
 struct NewsWidgetEntryView : View {
@@ -46,7 +51,7 @@ struct NewsWidgetEntryView : View {
             Text(entry.date, style: .time)
 
             Text("Favorite Emoji:")
-            Text(entry.configuration.favoriteEmoji)
+            //Text(entry.configuration.favoriteEmoji)
         }
     }
 }
@@ -79,6 +84,6 @@ extension ConfigurationAppIntent {
 #Preview(as: .systemSmall) {
     NewsWidget()
 } timeline: {
-    SimpleEntry(date: .now, configuration: .smiley)
-    SimpleEntry(date: .now, configuration: .starEyes)
+    NewsListEntry(date: .now, state: .idle)
+    NewsListEntry(date: .now, state: .idle)
 }
