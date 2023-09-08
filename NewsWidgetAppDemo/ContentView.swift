@@ -6,19 +6,37 @@
 //
 
 import SwiftUI
+import Combine
+
 
 struct ContentView: View {
+
+    @ObservedObject var newsViewModel = NewsViewModel()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        GeometryReader { geometry in
+
+            switch newsViewModel.state {
+            case .loading:
+                Text("Loading...")
+                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            case .success(let result):
+                List(result) { item in
+                    Text(item.title)
+                }
+            case .error:
+                Text("Error occured!")
+                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            }
+
+            }.onAppear {
+                newsViewModel.getDataIfNeeded()
+            }
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
