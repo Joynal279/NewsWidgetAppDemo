@@ -9,6 +9,9 @@ import WidgetKit
 import SwiftUI
 
 struct Provider: AppIntentTimelineProvider {
+    
+    private let newsViewModel: NewsViewModel = NewsViewModel()
+    
     func placeholder(in context: Context) -> NewsListEntry {
         NewsListEntry(date: Date(), state: .idle)
     }
@@ -19,15 +22,16 @@ struct Provider: AppIntentTimelineProvider {
     
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<NewsListEntry> {
         var entries: [NewsListEntry] = []
-
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = NewsListEntry(date: entryDate, state: .idle)
-            entries.append(entry)
+        newsViewModel.getDataIfNeeded{ result in
+            switch result {
+            case .success(let newsItems):
+                let items = Array(newsItems.prefix(4))
+                entries.append(NewsListEntry(date: Date(), state: .success(items)))
+            case .failure:
+                entries.append(NewsListEntry(date: Date(), state: .error))
+                break
+            }
         }
-
         return Timeline(entries: entries, policy: .atEnd)
     }
 }
